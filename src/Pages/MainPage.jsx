@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import React from 'react'
+import UploadPage from "./UploadPage"
 
 function MainPage() {
   return (
@@ -13,7 +14,8 @@ function MainPage() {
           <div className="p-4">
             <h2 className="text-lg font-semibold">Upload</h2>
             <p>Upload your files here.</p>
-            {/* Add your upload component here */}
+            {/* upload component  */}
+            <UploadPage />
           </div>
         </TabsContent>
         <TabsContent value="gallery">
