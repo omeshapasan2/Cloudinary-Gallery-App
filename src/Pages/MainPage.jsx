@@ -12,8 +12,7 @@ function MainPage() {
         </TabsList>
         <TabsContent value="upload">
           <div className="p-4">
-            <h2 className="text-lg font-semibold">Upload</h2>
-            <p>Upload your files here.</p>
+
             {/* upload component  */}
             <UploadPage />
           </div>
