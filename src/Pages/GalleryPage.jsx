@@ -1,6 +1,7 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import CopyButton from '../components/CopyButton';
 
 function GalleryPage() {
 
@@ -30,6 +31,7 @@ function GalleryPage() {
               <p className="text-sm text-gray-500">Format: {image.format}</p>
               <p className="text-sm text-gray-500">Dimensions: {image.width}x{image.height}</p>
             </div>
+            <CopyButton image={image} />
           </div>
         ))}
       </div>
