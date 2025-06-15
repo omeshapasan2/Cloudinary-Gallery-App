@@ -7,6 +7,7 @@ function GalleryPage() {
 
   const [ images, setImages ] = useState([]);
 
+  // Fetch images from the server
   useEffect(() => {
     axios.get('https://cloudinary-gallery-app-production.up.railway.app/api/cloudinary')
       .then((res) => {

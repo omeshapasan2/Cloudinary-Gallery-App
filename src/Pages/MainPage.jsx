@@ -16,6 +16,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
+import AccountInput from "../components/AccountInput";
 
 function MainPage() {
   return (
@@ -34,59 +35,10 @@ function MainPage() {
                 <FaCirclePlus size={28} className="cursor-pointer" />
               </DrawerTrigger>
               <DrawerContent>
-                <DrawerHeader>
-                  {/* Inputs */}
-                  <DrawerTitle>Input Cloudinary Details</DrawerTitle>
-                  <div className="mt-4 space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Cloud Name
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. my-cloud"
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-black dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        API Key
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. 1234567890"
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-black dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        API Secret
-                      </label>
-                      <input
-                        type="password"
-                        placeholder="•••••••••••"
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-black dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Folder Name
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. React-Gallery-App"
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-black dark:text-white"
-                      />
-                    </div>
-                  </div>
-                </DrawerHeader>
-
-                <DrawerFooter>
-                  <Button>Submit</Button>
-                  <DrawerClose>
-                    <Button variant="outline">Cancel</Button>
-                  </DrawerClose>
-                </DrawerFooter>
+                
+                  {/* Input Details Component */}
+                  <AccountInput />
+                
               </DrawerContent>
             </Drawer>
 

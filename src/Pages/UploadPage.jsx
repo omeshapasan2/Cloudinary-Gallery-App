@@ -33,6 +33,11 @@ function UploadPage() {
         formData.append('files', file);
       });
 
+      // Append Cloudinary credentials
+      formData.append('cloudName', cloudName);
+      formData.append('apiKey', apiKey);
+      formData.append('apiSecret', apiSecret);
+
       // Create XMLHttpRequest for progress tracking
       const xhr = new XMLHttpRequest();
 
