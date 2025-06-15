@@ -9,6 +9,10 @@ function UploadPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
 
+  const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://cloudinary-gallery-app-production.up.railway.app' 
+  : 'http://localhost:5000';
+
   // Store pending files for upload
   const handleFileSelect = (files) => {
     setPendingFiles(files);
@@ -73,7 +77,7 @@ function UploadPage() {
       });
 
       // Send the request to your backend
-      xhr.open('POST', 'http://localhost:5000/api/upload');
+      xhr.open('POST', `${API_BASE_URL}/api/upload`);
       xhr.send(formData);
 
     } catch (error) {

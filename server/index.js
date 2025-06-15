@@ -43,6 +43,7 @@ app.get('/api/cloudinary', async (req, res) => {
       {
         params: {
           asset_folder: 'React-Gallery-App',
+          max_results: 500,
         },
         auth: {
           username: process.env.CLOUDINARY_API_KEY,
