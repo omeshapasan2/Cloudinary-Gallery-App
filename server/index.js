@@ -8,6 +8,9 @@ const multer = require('multer');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const { v4: uuidv4 } = require('uuid');
+const sessions = {}; // In-memory session store (reset on server restart)
+
 // Configure multer for file uploads (memory storage)
 const storage = multer.memoryStorage();
 const upload = multer({ 
@@ -26,118 +29,82 @@ app.get('/', (req, res) => {
   res.json({ message: 'Hello from Express!' });
 });
 
-// Updated route to handle FormData
-app.post('/api/send-details', upload.none(), async (req, res) => {
+app.post('/api/send-details', (req, res) => {
   const { cloudName, apiKey, apiSecret } = req.body;
 
   if (!cloudName || !apiKey || !apiSecret) {
     return res.status(400).json({ error: 'Missing credentials' });
   }
 
-  // Configure Cloudinary dynamically with input credentials
-  cloudinary.config({
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret,
-  });
+  const sessionId = uuidv4(); // Generate a unique session ID
 
-  try {
-    // Example: list resources in Cloudinary
-    const resources = await cloudinary.api.resources({
-      max_results: 10,
-    });
+  sessions[sessionId] = {
+    cloudName,
+    apiKey,
+    apiSecret
+  };
 
-    return res.json({
-      message: 'Success! Used your credentials to fetch resources.',
-      resources,
-    });
-  } catch (error) {
-    console.error('Cloudinary error:', error);
-    return res.status(500).json({ error: error.message });
-  }
+  return res.json({ message: 'Session created', sessionId });
 });
+
+// Helper function to get credentials
+function configureCloudinaryFromSession(sessionId) {
+  const session = sessions[sessionId];
+  if (!session) {
+    throw new Error('Invalid session ID');
+  }
+
+  cloudinary.config({
+    cloud_name: session.cloudName,
+    api_key: session.apiKey,
+    api_secret: session.apiSecret,
+  });
+}
 
 // Get images from Cloudinary
 app.post('/api/cloudinary', async (req, res) => {
-  const { cloudName, apiKey, apiSecret } = req.body;
-
-  if (!cloudName || !apiKey || !apiSecret) {
-    return res.status(400).json({ error: 'Missing credentials' });
-  }
-
-  // Configure cloudinary dynamically
-  cloudinary.config({
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret,
-  });
+  const { sessionId } = req.body;
 
   try {
-    const resources = await cloudinary.api.resources({
-      max_results: 10,
-    });
-
+    configureCloudinaryFromSession(sessionId);
+    const resources = await cloudinary.api.resources({ max_results: 10 });
     res.json(resources);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+
 // Upload files to Cloudinary
 app.post('/api/upload', upload.array('files', 10), async (req, res) => {
-  const { cloudName, apiKey, apiSecret } = req.body;
-
-  if (!cloudName || !apiKey || !apiSecret) {
-    return res.status(400).json({ error: 'Missing credentials' });
-  }
-
-  cloudinary.config({
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret,
-  });
+  const { sessionId } = req.body;
 
   try {
+    configureCloudinaryFromSession(sessionId);
+
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files provided' });
     }
 
     const uploadPromises = req.files.map(file => {
       return new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: 'React-Gallery-App',
-            resource_type: 'auto',
-          },
-          (error, result) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve({
-                public_id: result.public_id,
-                url: result.secure_url,
-                format: result.format,
-                width: result.width,
-                height: result.height
-              });
-            }
-          }
-        );
-        
-        uploadStream.end(file.buffer);
+        const stream = cloudinary.uploader.upload_stream({
+          folder: 'React-Gallery-App',
+          resource_type: 'auto',
+        }, (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        });
+
+        stream.end(file.buffer);
       });
     });
 
-    const uploadResults = await Promise.all(uploadPromises);
-    
-    res.json({
-      success: true,
-      message: `${uploadResults.length} files uploaded successfully`,
-      files: uploadResults
-    });
+    const results = await Promise.all(uploadPromises);
 
+    res.json({ success: true, files: results });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to upload files', details: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
