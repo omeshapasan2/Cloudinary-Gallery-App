@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FileUpload } from '../components/ui/file-upload';
+import { useCloudinary } from '../core/CloudinaryContext';
 
 function UploadPage() {
   const [files, setFiles] = useState([]);
@@ -9,55 +10,20 @@ function UploadPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   
-  // NEW: Add these states for credentials and session
-  const [sessionId, setSessionId] = useState(null);
-  const [credentials, setCredentials] = useState({
-    cloudName: '',
-    apiKey: '',
-    apiSecret: ''
-  });
-  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  // Get sessionId and currentAccount from context
+  const { sessionId, currentAccount, sessions } = useCloudinary();
 
   const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://cloudinary-gallery-app-production.up.railway.app' 
-  : 'http://localhost:5000';
+    ? 'https://cloudinary-gallery-app-production.up.railway.app' 
+    : 'http://localhost:5000';
 
-  // NEW: Handle credential input changes
-  const handleCredentialChange = (field, value) => {
-    setCredentials(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  // NEW: Create session with credentials
-  const createSession = async () => {
-    if (!credentials.cloudName || !credentials.apiKey || !credentials.apiSecret) {
-      alert('Please fill in all credential fields');
-      return;
+  // Get the active session ID (either from context or from sessions based on current account)
+  const getActiveSessionId = () => {
+    if (sessionId) return sessionId;
+    if (currentAccount && sessions[currentAccount.id]) {
+      return sessions[currentAccount.id];
     }
-
-    setIsCreatingSession(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/send-details`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      });
-      
-      const data = await response.json();
-      if (response.ok) {
-        setSessionId(data.sessionId);
-        alert('Credentials configured successfully!');
-      } else {
-        alert('Failed to configure credentials: ' + data.error);
-      }
-    } catch (error) {
-      console.error('Session creation error:', error);
-      alert('Error configuring credentials. Please try again.');
-    } finally {
-      setIsCreatingSession(false);
-    }
+    return null;
   };
 
   // Store pending files for upload
@@ -68,9 +34,9 @@ function UploadPage() {
   const handleUpload = async () => {
     if (pendingFiles.length === 0) return;
     
-    // NEW: Check for sessionId instead of credentials
-    if (!sessionId) {
-      alert('Please configure credentials first');
+    const activeSessionId = getActiveSessionId();
+    if (!activeSessionId) {
+      alert('Please select a Cloudinary account first');
       return;
     }
 
@@ -86,8 +52,8 @@ function UploadPage() {
         formData.append('files', file);
       });
 
-      // CHANGED: Append sessionId instead of credentials
-      formData.append('sessionId', sessionId);
+      // Append sessionId
+      formData.append('sessionId', activeSessionId);
 
       // Create XMLHttpRequest for progress tracking
       const xhr = new XMLHttpRequest();
@@ -113,7 +79,7 @@ function UploadPage() {
           // Clear pending files
           setPendingFiles([]);
           
-          // Show success message (optional)
+          // Show success message
           alert(`${response.files.length} files uploaded successfully!`);
         } else {
           console.error('Upload failed:', xhr.responseText);
@@ -144,73 +110,37 @@ function UploadPage() {
     }
   };
 
+  const activeSessionId = getActiveSessionId();
+
   return (
     <div className="space-y-6">
-      {/* NEW: Credentials Form */}
+      {/* Account Status Section */}
       <div className="w-full max-w-4xl mx-auto p-6 bg-gray-50 dark:bg-gray-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
-        <h2 className="text-xl font-semibold mb-4">Configure Cloudinary Credentials</h2>
+        <h2 className="text-xl font-semibold mb-4">Account Status</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Cloud Name</label>
-            <input
-              type="text"
-              value={credentials.cloudName}
-              onChange={(e) => handleCredentialChange('cloudName', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter cloud name"
-              disabled={!!sessionId}
-            />
+        {currentAccount ? (
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="font-medium text-green-600">
+                Connected: {currentAccount.label || currentAccount.cloudName}
+              </span>
+            </div>
+            
+            {activeSessionId && (
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Session: {activeSessionId.substring(0, 8)}...
+              </span>
+            )}
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">API Key</label>
-            <input
-              type="text"
-              value={credentials.apiKey}
-              onChange={(e) => handleCredentialChange('apiKey', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter API key"
-              disabled={!!sessionId}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">API Secret</label>
-            <input
-              type="password"
-              value={credentials.apiSecret}
-              onChange={(e) => handleCredentialChange('apiSecret', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter API secret"
-              disabled={!!sessionId}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={createSession}
-            disabled={isCreatingSession || !!sessionId}
-            className={`
-              px-6 py-2 font-medium rounded-lg transition-all
-              ${sessionId 
-                ? 'bg-green-500 text-white cursor-default' 
-                : isCreatingSession
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-600 text-white'
-              }
-            `}
-          >
-            {sessionId ? 'Credentials Configured ✓' : isCreatingSession ? 'Configuring...' : 'Configure Credentials'}
-          </button>
-          
-          {sessionId && (
-            <span className="text-sm text-green-600 font-medium">
-              Session ID: {sessionId.substring(0, 8)}...
+        ) : (
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            <span className="text-red-600">
+              No account selected. Please select an account from the account selector.
             </span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* File Upload Section */}
@@ -218,14 +148,14 @@ function UploadPage() {
         <FileUpload onChange={handleFileSelect} />
       </div>
       
-      {/* UPDATED: Upload button validation */}
+      {/* Upload Button */}
       <button 
         onClick={handleUpload} 
-        disabled={pendingFiles.length === 0 || isUploading || !sessionId}
+        disabled={pendingFiles.length === 0 || isUploading || !activeSessionId}
         className={`
           relative px-8 py-3 mt-4 font-semibold text-white rounded-lg
           transition-all duration-300 transform
-          ${pendingFiles.length === 0 || isUploading || !sessionId
+          ${pendingFiles.length === 0 || isUploading || !activeSessionId
             ? 'bg-gray-400 cursor-not-allowed' 
             : 'bg-blue-500 hover:bg-blue-600 hover:scale-105 active:scale-95 hover:shadow-xl'
           }
@@ -237,26 +167,26 @@ function UploadPage() {
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             <span>Uploading...</span>
           </div>
-        ) : !sessionId ? (
-          'Configure Credentials First'
+        ) : !activeSessionId ? (
+          'Select Account First'
         ) : (
           `Upload Files (${pendingFiles.length})`
         )}
       </button>
 
       {showProgress && (
-        <div className="fixed bottom-4 right-4 bg-white border rounded-lg p-4 shadow-lg">
-          <div className="w-48 bg-gray-200 rounded-full h-2">
+        <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 border rounded-lg p-4 shadow-lg">
+          <div className="w-48 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
             <div 
               className="bg-blue-600 h-2 rounded-full transition-all"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
-          <p className="text-sm mt-2">{uploadProgress}% Complete</p>
+          <p className="text-sm mt-2 dark:text-white">{uploadProgress}% Complete</p>
         </div>
       )}
 
-      {/* Display uploaded files (optional) */}
+      {/* Display uploaded files */}
       {files.length > 0 && (
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4">Uploaded Files:</h3>

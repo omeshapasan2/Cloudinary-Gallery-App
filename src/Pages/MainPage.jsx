@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import React from 'react'
+import { useState } from "react"
 import UploadPage from "./UploadPage"
 import GalleryPage from "./GalleryPage"
 import { FaCirclePlus } from "react-icons/fa6";
@@ -17,8 +18,11 @@ import {
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import AccountInput from "../components/AccountInput";
+import AccountSelector from "../components/AccountSelector";
 
 function MainPage() {
+  const [showSelector, setShowSelector] = useState(false); 
+
   return (
     <div>
       <Tabs defaultValue="upload" className="w-full">
@@ -47,17 +51,9 @@ function MainPage() {
                 <FaUserCircle size={28} className="cursor-pointer" />
               </DrawerTrigger>
               <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle>Change Cloudinary Account</DrawerTitle>
-                  <DrawerDescription>Account 1</DrawerDescription>
-                  <DrawerDescription>Account 2</DrawerDescription>
-                </DrawerHeader>
-                <DrawerFooter>
-                  <Button>Submit</Button>
-                  <DrawerClose>
-                    <Button variant="outline">Cancel</Button>
-                  </DrawerClose>
-                </DrawerFooter>
+                
+                <AccountSelector onClose={() => setShowSelector(false)}/>
+
               </DrawerContent>
             </Drawer>
           </div>
