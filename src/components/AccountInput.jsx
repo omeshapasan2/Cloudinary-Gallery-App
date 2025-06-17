@@ -2,53 +2,7 @@ import React from 'react'
 import { useState } from "react";
 
 function AccountInput() {
-    const [cloudName, setCloudName] = useState("");
-    const [apiKey, setApiKey] = useState("");
-    const [apiSecret, setApiSecret] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleSubmit = async () => {
-        setIsLoading(true);
-        
-        try {
-            const API_URL =
-                import.meta.env.MODE === "development"
-                    ? "http://localhost:5000/api/send-details"
-                    : "https://cloudinary-gallery-app-production.up.railway.app/api/send-details";
-
-            const response = await fetch(API_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    cloudName,
-                    apiKey,
-                    apiSecret
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log(result);
-            
-            // Only reset fields after successful submission
-            setCloudName("");
-            setApiKey("");
-            setApiSecret("");
-            
-            alert("Cloudinary details submitted successfully!");
-
-        } catch (error) {
-            console.error("Error submitting details:", error);
-            alert("Failed to submit details. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
-    }
+    
 
     return (
         <div>
