@@ -104,21 +104,20 @@ function AccountSelector({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Manage Cloudinary Accounts
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <FiX className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
-        </div>
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Manage Cloudinary Accounts
+        </h2>
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        >
+          <FiX className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+        </button>
+      </div>
 
-        <div className="max-h-[60vh] overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-4">
           {error && (
             <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
               <FiAlertCircle className="w-4 h-4 text-red-500" />
@@ -294,7 +293,7 @@ function AccountSelector({ onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    
   );
 }
 

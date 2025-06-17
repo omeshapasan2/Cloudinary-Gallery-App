@@ -16,6 +16,16 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu"
+
 import { Button } from "@/components/ui/button"
 import AccountInput from "../components/AccountInput";
 import AccountSelector from "../components/AccountSelector";
@@ -46,17 +56,19 @@ function MainPage() {
               </DrawerContent>
             </Drawer>
 
-            <Drawer>
-              <DrawerTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
                 <FaUserCircle size={28} className="cursor-pointer" />
-              </DrawerTrigger>
-              <DrawerContent>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
                 
                 <AccountSelector onClose={() => setShowSelector(false)}/>
 
-              </DrawerContent>
-            </Drawer>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+
+          
         </div>
 
         <TabsContent value="upload">
