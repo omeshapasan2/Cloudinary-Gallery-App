@@ -74,9 +74,10 @@ function GalleryPage() {
                 </span>
               </div>
               
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              {/* Session Id Display */}
+              {/* <span className="text-sm text-gray-600 dark:text-gray-400">
                 Session: {activeSessionId.substring(0, 8)}...
-              </span>
+              </span> */}
             </div>
             
             <button
