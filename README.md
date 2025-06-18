@@ -14,11 +14,6 @@ A modern React-based image gallery that allows users to upload and preview image
 - 🔗 Click to enlarge and copy image URL
 - 💾 Remembers user credentials via localStorage
 
----
-
-## 📷 Screenshots
-
-*(Add your screenshots here after you build the project)*
 
 ---
 
