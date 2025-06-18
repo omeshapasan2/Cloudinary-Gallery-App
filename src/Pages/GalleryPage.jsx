@@ -4,6 +4,7 @@ import axios from 'axios'
 import CopyButton from '../components/CopyButton';
 import { useCloudinary } from '../core/CloudinaryContext';
 import ImageCard from '../components/ImageCard';
+import { NavBar } from '../components/NavBar';
 
 function GalleryPage() {
   const [images, setImages] = useState([]);
@@ -61,6 +62,7 @@ function GalleryPage() {
 
   return (
     <div className="space-y-6">
+      <NavBar/>
       {/* Account Status Section */}
       <div className="w-full max-w-4xl mx-auto p-6 bg-gray-50 dark:bg-gray-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
         <h2 className="text-xl font-semibold mb-4">Gallery - Account Status</h2>

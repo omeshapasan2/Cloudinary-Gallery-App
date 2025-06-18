@@ -74,7 +74,7 @@ function MainPage() {
         <TabsContent value="upload">
           <div className="p-4">
             {/* upload component  */}
-            <UploadPage />
+            {/* <UploadPage /> */}
           </div>
         </TabsContent>
         <TabsContent value="gallery">
@@ -82,7 +82,7 @@ function MainPage() {
             <h2 className="text-lg font-semibold">Gallery</h2>
             <p>View your uploaded files here.</p>
             {/* gallery component*/}
-            <GalleryPage />
+            {/* <GalleryPage /> */}
           </div>
         </TabsContent>
       </Tabs>
