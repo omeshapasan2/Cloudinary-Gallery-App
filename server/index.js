@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cloudinary = require('cloudinary').v2;
-const axios = require('axios');
 const multer = require('multer');
 
 const app = express();
@@ -74,7 +73,6 @@ app.post('/api/cloudinary', async (req, res) => {
   }
 });
 
-
 // Upload files to Cloudinary
 app.post('/api/upload', upload.array('files', 10), async (req, res) => {
   const { sessionId } = req.body;
@@ -104,6 +102,88 @@ app.post('/api/upload', upload.array('files', 10), async (req, res) => {
 
     res.json({ success: true, files: results });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Rename/Move file in Cloudinary
+app.post('/api/rename', async (req, res) => {
+  const { sessionId, currentPublicId, newPublicId } = req.body;
+
+  try {
+    configureCloudinaryFromSession(sessionId);
+
+    if (!currentPublicId || !newPublicId) {
+      return res.status(400).json({ error: 'Both current and new public IDs are required' });
+    }
+
+    // Use the rename method to change the public_id
+    const result = await cloudinary.uploader.rename(currentPublicId, newPublicId);
+    
+    res.json({ 
+      success: true, 
+      message: 'File renamed successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('Rename error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete file from Cloudinary
+app.post('/api/delete', async (req, res) => {
+  const { sessionId, publicId } = req.body;
+
+  try {
+    configureCloudinaryFromSession(sessionId);
+
+    if (!publicId) {
+      return res.status(400).json({ error: 'Public ID is required' });
+    }
+
+    // Delete the resource from Cloudinary
+    const result = await cloudinary.uploader.destroy(publicId);
+    
+    if (result.result === 'ok') {
+      res.json({ 
+        success: true, 
+        message: 'File deleted successfully',
+        result: result
+      });
+    } else {
+      res.status(400).json({ 
+        error: 'Failed to delete file',
+        result: result
+      });
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Batch delete multiple files
+app.post('/api/delete-batch', async (req, res) => {
+  const { sessionId, publicIds } = req.body;
+
+  try {
+    configureCloudinaryFromSession(sessionId);
+
+    if (!publicIds || !Array.isArray(publicIds) || publicIds.length === 0) {
+      return res.status(400).json({ error: 'Array of public IDs is required' });
+    }
+
+    // Delete multiple resources
+    const result = await cloudinary.api.delete_resources(publicIds);
+    
+    res.json({ 
+      success: true, 
+      message: `Batch delete completed`,
+      result: result
+    });
+  } catch (error) {
+    console.error('Batch delete error:', error);
     res.status(500).json({ error: error.message });
   }
 });

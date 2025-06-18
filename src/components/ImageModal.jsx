@@ -1,6 +1,6 @@
 import React from 'react'
 
-function InfoModal() {
+function ImageModal() {
   return (
     <div>
       
@@ -8,4 +8,4 @@ function InfoModal() {
   )
 }
 
-export default InfoModal
+export default ImageModal
