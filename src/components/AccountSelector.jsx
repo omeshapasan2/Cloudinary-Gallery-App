@@ -8,6 +8,8 @@ function AccountSelector({ onClose }) {
     setCurrentAccount,
     updateSession,
     setSessionId,
+    updateAccount,
+    deleteAccount,
   } = useCloudinary();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -70,15 +72,12 @@ function AccountSelector({ onClose }) {
   };
 
   const handleSaveEdit = () => {
-    // This would need to be implemented in your CloudinaryContext
-    // For now, we'll just show the concept
     const updatedAccount = {
       ...accounts.find(acc => acc.id === editingAccount),
       ...editForm
     };
-    
-    // You'd need to add an updateAccount function to your context
-    // updateAccount(editingAccount, updatedAccount);
+
+    updateAccount(editingAccount, updatedAccount);
     
     setEditingAccount(null);
     setEditForm({ label: '', cloudName: '', apiKey: '', apiSecret: '' });
@@ -89,13 +88,14 @@ function AccountSelector({ onClose }) {
     setEditForm({ label: '', cloudName: '', apiKey: '', apiSecret: '' });
   };
 
+  // Fixed: This should only set the delete confirmation state
   const handleDelete = (accountId) => {
     setDeleteConfirm(accountId);
   };
 
+  // Fixed: This actually performs the delete
   const confirmDelete = () => {
-    // This would need to be implemented in your CloudinaryContext
-    // deleteAccount(deleteConfirm);
+    deleteAccount(deleteConfirm);
     setDeleteConfirm(null);
   };
 
