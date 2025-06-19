@@ -49,7 +49,7 @@ export function NavBar() {
   const navItems = [
     {
       name: "Upload",
-      link: "/upload",
+      link: "/",
     },
     {
       name: "Galllery",
