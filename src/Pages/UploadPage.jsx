@@ -117,15 +117,13 @@ function UploadPage() {
     <div className="space-y-6">
       <NavBar/>
       {/* Account Status Section */}
-      <div className="w-full max-w-4xl mx-auto p-6 bg-gray-50 dark:bg-gray-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
-        <h2 className="text-xl font-semibold mb-4">Account Status</h2>
-        
+      <div className="w-full max-w-4xl mx-auto p-6 bg-gray-50 dark:bg-gray-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">    
         {currentAccount ? (
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               <span className="font-medium text-green-600">
-                Connected: {currentAccount.label || currentAccount.cloudName}
+                Connected to: {currentAccount.label || currentAccount.cloudName}
               </span>
             </div>
             

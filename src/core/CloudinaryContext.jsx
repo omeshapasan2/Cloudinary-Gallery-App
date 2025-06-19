@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import {
   getCloudinaryData,
   saveCloudinaryData,
@@ -11,8 +11,33 @@ const CloudinaryContext = createContext();
 export function CloudinaryProvider({ children }) {
   const [accounts, setAccounts] = useState(() => getCloudinaryData().accounts);
   const [sessions, setSessions] = useState(() => getCloudinaryData().sessions);
-  const [currentAccount, setCurrentAccount] = useState(null);
-  const [sessionId, setSessionId] = useState(null);
+
+  const [currentAccount, setCurrentAccount] = useState(() => {
+    const saved = localStorage.getItem('currentAccount');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [sessionId, setSessionId] = useState(() => {
+    return localStorage.getItem('sessionId') || null;
+  });
+
+  // 🔁 Persist currentAccount to localStorage
+  useEffect(() => {
+    if (currentAccount) {
+      localStorage.setItem('currentAccount', JSON.stringify(currentAccount));
+    } else {
+      localStorage.removeItem('currentAccount');
+    }
+  }, [currentAccount]);
+
+  // 🔁 Persist sessionId to localStorage
+  useEffect(() => {
+    if (sessionId) {
+      localStorage.setItem('sessionId', sessionId);
+    } else {
+      localStorage.removeItem('sessionId');
+    }
+  }, [sessionId]);
 
   const addAccount = (account) => {
     addAccountToStorage(account);
@@ -27,7 +52,6 @@ export function CloudinaryProvider({ children }) {
     setSessionId(newSessionId);
   };
 
-  // ADD THESE MISSING FUNCTIONS:
   const updateAccount = (accountId, updatedAccountData) => {
     const data = getCloudinaryData();
     const accountIndex = data.accounts.findIndex(acc => acc.id === accountId);
@@ -35,19 +59,18 @@ export function CloudinaryProvider({ children }) {
     if (accountIndex !== -1) {
       data.accounts[accountIndex] = { ...data.accounts[accountIndex], ...updatedAccountData };
       saveCloudinaryData(data);
-      setAccounts(data.accounts); // Update state
+      setAccounts(data.accounts);
     }
   };
 
   const deleteAccount = (accountId) => {
     const data = getCloudinaryData();
     data.accounts = data.accounts.filter(acc => acc.id !== accountId);
-    delete data.sessions[accountId]; // Also remove any associated sessions
+    delete data.sessions[accountId];
     saveCloudinaryData(data);
-    setAccounts(data.accounts); // Update state
-    setSessions(data.sessions); // Update sessions state
-    
-    // If we're deleting the current account, clear it
+    setAccounts(data.accounts);
+    setSessions(data.sessions);
+
     if (currentAccount && currentAccount.id === accountId) {
       setCurrentAccount(null);
       setSessionId(null);
@@ -59,8 +82,8 @@ export function CloudinaryProvider({ children }) {
       value={{
         accounts,
         addAccount,
-        updateAccount,    // ADD THIS
-        deleteAccount,    // ADD THIS
+        updateAccount,
+        deleteAccount,
         currentAccount,
         setCurrentAccount,
         sessionId,
