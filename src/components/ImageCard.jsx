@@ -47,7 +47,7 @@ function CopyButton({ image, className }) {
   );
 }
 
-function ImageCard({ image }) {
+function ImageCard({ image, onActionComplete }) {
   const [isHovered, setIsHovered] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -73,8 +73,8 @@ function ImageCard({ image }) {
     try {
       await axios.post(`${API_BASE_URL}/api/rename`, {
         sessionId: sid,
-        public_id: image.public_id,
-        new_name: newName,
+        currentPublicId: image.public_id,
+        newPublicId: newName,
       });
       onActionComplete(); // Refresh images
     } catch (err) {
@@ -91,7 +91,7 @@ function ImageCard({ image }) {
     try {
       await axios.post(`${API_BASE_URL}/api/delete`, {
         sessionId: sid,
-        public_id: image.public_id,
+        publicId: image.public_id,
       });
       onActionComplete(); // Refresh images
     } catch (err) {
@@ -205,7 +205,12 @@ function ImageCard({ image }) {
             </DropdownMenuContent> */}
 
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setRenameOpen(true)}>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setNewName(image.public_id);
+                    setRenameOpen(true)
+                  }}
+                >
                     Rename
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

@@ -107,7 +107,7 @@ app.post('/api/upload', upload.array('files', 10), async (req, res) => {
 });
 
 // Rename/Move file in Cloudinary
-app.post('/api/rename', async (req, res) => {
+app.post('/api/rename', (req, res) => {
   const { sessionId, currentPublicId, newPublicId } = req.body;
 
   try {
@@ -118,15 +118,21 @@ app.post('/api/rename', async (req, res) => {
     }
 
     // Use the rename method to change the public_id
-    const result = await cloudinary.uploader.rename(currentPublicId, newPublicId);
-    
-    res.json({ 
-      success: true, 
-      message: 'File renamed successfully',
-      result: result
-    });
+    cloudinary.uploader
+      .rename(currentPublicId, newPublicId)
+      .then(result => {
+        res.json({ 
+          success: true, 
+          message: 'File renamed successfully',
+          result: result
+        });
+      })
+      .catch(error => {
+        console.error('Rename error:', error);
+        res.status(500).json({ error: error.message });
+      });
+
   } catch (error) {
-    console.error('Rename error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -143,26 +149,32 @@ app.post('/api/delete', async (req, res) => {
     }
 
     // Delete the resource from Cloudinary
-    const result = await cloudinary.uploader.destroy(publicId);
-    
-    if (result.result === 'ok') {
-      res.json({ 
-        success: true, 
-        message: 'File deleted successfully',
-        result: result
+    cloudinary.uploader
+      .destroy(publicId)
+      .then(result => {
+        if (result.result === 'ok') {
+          res.json({ 
+            success: true, 
+            message: 'File deleted successfully',
+            result: result
+          });
+        } else {
+          res.status(400).json({ 
+            error: 'Failed to delete file',
+            result: result
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Delete error:', error);
+        res.status(500).json({ error: error.message });
       });
-    } else {
-      res.status(400).json({ 
-        error: 'Failed to delete file',
-        result: result
-      });
-    }
   } catch (error) {
-    console.error('Delete error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+// ❌ - Not yet initialized
 // Batch delete multiple files
 app.post('/api/delete-batch', async (req, res) => {
   const { sessionId, publicIds } = req.body;
