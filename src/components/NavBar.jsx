@@ -32,8 +32,17 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import AccountInput from "../components/AccountInput";
 import AccountSelector from "../components/AccountSelector";
+import Guide from "./Guide";
 
 
 export function NavBar() {
@@ -62,18 +71,30 @@ export function NavBar() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4 z-50">
-            <FaCircleInfo size={28}/>
-                        <Drawer>
-                          <DrawerTrigger asChild>
+
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <FaCircleInfo size={28} className="cursor-pointer" />
+                          </DialogTrigger>
+                          <DialogContent>
+                            
+                              {/* Guide Component */}
+                              <Guide />
+                            
+                          </DialogContent>
+                        </Dialog>
+                                    
+                        <Dialog>
+                          <DialogTrigger asChild>
                             <FaCirclePlus size={28} className="cursor-pointer" />
-                          </DrawerTrigger>
-                          <DrawerContent>
+                          </DialogTrigger>
+                          <DialogContent>
                             
                               {/* Input Details Component */}
                               <AccountInput />
                             
-                          </DrawerContent>
-                        </Drawer>
+                          </DialogContent>
+                        </Dialog>
             
                         <DropdownMenu>
                           <DropdownMenuTrigger>
@@ -85,6 +106,7 @@ export function NavBar() {
             
                           </DropdownMenuContent>
                         </DropdownMenu>
+
           </div>
         </NavBody>
 
