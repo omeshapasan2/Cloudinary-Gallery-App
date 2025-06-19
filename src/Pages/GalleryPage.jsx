@@ -5,6 +5,7 @@ import CopyButton from '../components/CopyButton';
 import { useCloudinary } from '../core/CloudinaryContext';
 import ImageCard from '../components/ImageCard';
 import { NavBar } from '../components/NavBar';
+import { RefreshCw } from "lucide-react";
 
 function GalleryPage() {
   const [images, setImages] = useState([]);
@@ -63,48 +64,64 @@ function GalleryPage() {
   return (
     <div className="space-y-6">
       <NavBar/>
-      {/* Account Status Section */}
-      <div className="w-full max-w-4xl mx-auto p-6 bg-gray-50 dark:bg-gray-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
-        
-        {currentAccount && activeSessionId ? (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="font-medium text-green-600">
-                  Connected to: {currentAccount.label || currentAccount.cloudName}
-                </span>
-              </div>
-              
-              {/* <span className="text-sm text-gray-600 dark:text-gray-400">
-                Session: {activeSessionId.substring(0, 8)}...
-              </span> */}
-            </div>
-            
-            <button
-              onClick={fetchImages}
-              disabled={isLoading}
-              className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-            >
-              {isLoading ? (
+        {/* Account Status Section */}
+        <div className="w-full bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="h-14 flex items-center justify-between">
+              {currentAccount && activeSessionId ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Loading...</span>
+                  {/* Left side - Status */}
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="relative">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping opacity-75"></div>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900 hidden sm:inline">
+                        Connected to {currentAccount.label || currentAccount.cloudName}
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 sm:hidden">
+                        Connected
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Right side - Refresh button */}
+                  <button
+                    onClick={fetchImages}
+                    disabled={isLoading}
+                    className="group relative p-2 text-gray-700 hover:text-black hover:bg-gray-100 disabled:text-gray-400 disabled:hover:bg-transparent rounded-full transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95"
+                    title="Refresh Gallery"
+                  >
+                    <RefreshCw 
+                      className={`w-4 h-4 transition-transform duration-500 ${
+                        isLoading ? 'animate-spin' : 'group-hover:rotate-180'
+                      }`} 
+                    />
+                    {/* Subtle loading indicator */}
+                    {isLoading && (
+                      <div className="absolute inset-0 rounded-full border border-gray-300 animate-pulse"></div>
+                    )}
+                  </button>
                 </>
               ) : (
-                <span>Refresh Gallery</span>
+                <div className="flex items-center space-x-2 w-full">
+                  <div className="relative">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <div className="absolute inset-0 w-2 h-2 bg-red-500 rounded-full animate-ping opacity-75"></div>
+                  </div>
+                  <span className="text-sm text-gray-700">
+                    <span className="hidden sm:inline">No account selected. Please select an account to view your gallery.</span>
+                    <span className="sm:hidden">No account selected</span>
+                  </span>
+                </div>
               )}
-            </button>
+            </div>
           </div>
-        ) : (
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span className="text-red-600">
-              No account selected. Please select an account from the account selector to view your gallery.
-            </span>
-          </div>
-        )}
-      </div>
+          
+          {/* Subtle bottom accent line */}
+          <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+        </div>
 
       {/* Error Message */}
       {error && (

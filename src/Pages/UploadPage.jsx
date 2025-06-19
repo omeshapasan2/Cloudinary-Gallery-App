@@ -117,31 +117,61 @@ function UploadPage() {
     <div className="space-y-6">
       <NavBar/>
       {/* Account Status Section */}
-      <div className="w-full max-w-4xl mx-auto p-6 bg-gray-50 dark:bg-gray-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">    
-        {currentAccount ? (
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="font-medium text-green-600">
-                Connected to: {currentAccount.label || currentAccount.cloudName}
-              </span>
-            </div>
-            
-            {/* Session Id Display */}
-            {/* {activeSessionId && (
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Session: {activeSessionId.substring(0, 8)}...
-              </span>
-            )} */}
+      <div className="w-full bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="h-12 flex items-center">
+            {currentAccount ? (
+              <div className="flex items-center space-x-3 animate-fade-in">
+                <div className="relative">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+                <span className="text-sm font-medium text-gray-900 transition-colors duration-200">
+                  <span className="hidden sm:inline">Connected to {currentAccount.label || currentAccount.cloudName}</span>
+                  <span className="sm:hidden">Connected</span>
+                </span>
+                
+                {/* Optional Session ID - uncomment if needed */}
+                {/* {activeSessionId && (
+                  <span className="hidden md:inline text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-mono">
+                    {activeSessionId.substring(0, 8)}...
+                  </span>
+                )} */}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-3 animate-fade-in">
+                <div className="relative">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <div className="absolute inset-0 w-2 h-2 bg-red-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+                <span className="text-sm text-gray-700">
+                  <span className="hidden sm:inline">No account selected. Please select an account from the account selector.</span>
+                  <span className="sm:hidden">No account selected</span>
+                </span>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span className="text-red-600">
-              No account selected. Please select an account from the account selector.
-            </span>
-          </div>
-        )}
+        </div>
+        
+        {/* Subtle bottom accent line */}
+        <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-50"></div>
+        
+        <style jsx>{`
+          @keyframes fade-in {
+            from {
+              opacity: 0;
+              transform: translateY(-2px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          .animate-fade-in {
+            animation: fade-in 0.3s ease-out;
+          }
+        `}</style>
       </div>
 
       {/* File Upload Section */}
