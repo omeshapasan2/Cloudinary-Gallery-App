@@ -15,7 +15,7 @@ function App() {
       <CloudinaryProvider>
         <Routes>
           {/* <Route path="/" element={<MainPage />} /> */}
-          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/upload" element={<UploadPage />} />
         </Routes>
