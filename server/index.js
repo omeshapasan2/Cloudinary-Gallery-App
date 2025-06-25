@@ -60,22 +60,137 @@ function configureCloudinaryFromSession(sessionId) {
   });
 }
 
-// Get images from Cloudinary
-app.post('/api/cloudinary', async (req, res) => {
-  const { sessionId } = req.body;
+// Get folders from Cloudinary
+app.post('/api/folders', async (req, res) => {
+  const { sessionId, folder } = req.body;
 
   try {
     configureCloudinaryFromSession(sessionId);
-    const resources = await cloudinary.api.resources({ max_results: 10 });
-    res.json(resources);
+    
+    let folders;
+    if (!folder || folder === '') {
+      // Get root folders
+      folders = await cloudinary.api.root_folders();
+    } else {
+      // Get subfolders
+      folders = await cloudinary.api.sub_folders(folder);
+    }
+    
+    res.json(folders);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Upload files to Cloudinary
+// Get images from Cloudinary (updated to support folders)
+app.post('/api/cloudinary', async (req, res) => {
+  const { sessionId, folder } = req.body;
+
+  try {
+    configureCloudinaryFromSession(sessionId);
+    
+    const options = { 
+      max_results: 100,
+      resource_type: 'image',
+      type: 'upload'
+    };
+
+    let resources;
+    
+    // If folder is specified, get resources from that folder
+    if (folder && folder !== '') {
+      const folderPrefix = folder.endsWith('/') ? folder : folder + '/';
+      options.prefix = folderPrefix;
+      resources = await cloudinary.api.resources(options);
+    } else {
+      resources = await cloudinary.api.resources(options);
+      resources.resources = resources.resources.filter(
+        (item) => !item.public_id.includes('/')
+      );
+    }
+    res.json(resources);
+    
+  } catch (error) {
+    console.error('Cloudinary fetch error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create folder
+app.post('/api/create-folder', async (req, res) => {
+  const { sessionId, folderPath } = req.body;
+
+  try {
+    configureCloudinaryFromSession(sessionId);
+
+    if (!folderPath) {
+      return res.status(400).json({ error: 'Folder path is required' });
+    }
+
+    const result = await cloudinary.api.create_folder(folderPath);
+    res.json({ 
+      success: true, 
+      message: 'Folder created successfully',
+      result: result
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Rename/Update folder
+app.post('/api/rename-folder', async (req, res) => {
+  const { sessionId, currentFolderPath, newFolderPath } = req.body;
+
+  try {
+    configureCloudinaryFromSession(sessionId);
+
+    if (!currentFolderPath || !newFolderPath) {
+      return res.status(400).json({ error: 'Both current and new folder paths are required' });
+    }
+
+    // Use update_folder method (equivalent to PUT request)
+    const result = await cloudinary.api.update_folder(currentFolderPath, {
+      to_folder: newFolderPath
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Folder renamed successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('Rename folder error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete folder
+app.post('/api/delete-folder', async (req, res) => {
+  const { sessionId, folderPath } = req.body;
+
+  try {
+    configureCloudinaryFromSession(sessionId);
+
+    if (!folderPath) {
+      return res.status(400).json({ error: 'Folder path is required' });
+    }
+
+    const result = await cloudinary.api.delete_folder(folderPath);
+    res.json({ 
+      success: true, 
+      message: 'Folder deleted successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('Delete folder error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Upload files to Cloudinary (updated to support folder upload)
 app.post('/api/upload', upload.array('files', 10), async (req, res) => {
-  const { sessionId } = req.body;
+  const { sessionId, folder } = req.body;
 
   try {
     configureCloudinaryFromSession(sessionId);
@@ -86,10 +201,18 @@ app.post('/api/upload', upload.array('files', 10), async (req, res) => {
 
     const uploadPromises = req.files.map(file => {
       return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream({
-          folder: 'React-Gallery-App',
+        const uploadOptions = {
           resource_type: 'auto',
-        }, (error, result) => {
+        };
+
+        // If folder is specified, upload to that folder
+        if (folder && folder !== '') {
+          uploadOptions.folder = folder;
+        } else {
+          uploadOptions.folder = 'React-Gallery-App';
+        }
+
+        const stream = cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
           if (error) reject(error);
           else resolve(result);
         });
@@ -174,7 +297,6 @@ app.post('/api/delete', async (req, res) => {
   }
 });
 
-// ❌ - Not yet initialized
 // Batch delete multiple files
 app.post('/api/delete-batch', async (req, res) => {
   const { sessionId, publicIds } = req.body;
