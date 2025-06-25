@@ -90,13 +90,21 @@ function FolderCard({ folder, onNavigate, onActionComplete, currentFolderPath })
     }
   };
 
-  
-
   const handleFolderClick = (e) => {
-    // Only navigate if not clicking on the dropdown menu
-    if (!e.target.closest('.dropdown-trigger')) {
-      onNavigate(folder.name);
+    // Check if the click target is part of the dropdown menu
+    const dropdownButton = e.currentTarget.querySelector('[data-dropdown-trigger]');
+    const dropdownContent = document.querySelector('[data-radix-popper-content-wrapper]');
+    
+    // If clicking on dropdown button or its content, don't navigate
+    if (dropdownButton && (dropdownButton.contains(e.target) || e.target === dropdownButton)) {
+      return;
     }
+    
+    if (dropdownContent && dropdownContent.contains(e.target)) {
+      return;
+    }
+    
+    onNavigate(folder.name);
   };
 
   return (
@@ -147,14 +155,19 @@ function FolderCard({ folder, onNavigate, onActionComplete, currentFolderPath })
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button 
-              className="dropdown-trigger absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm border border-blue-200 text-blue-700 hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100"
-              onClick={(e) => e.stopPropagation()}
+              data-dropdown-trigger
+              className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm border border-blue-200 text-blue-700 hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100 z-10"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
             >
               <MoreVertical size={14} />
             </button>
           </DropdownMenuTrigger>
           
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="z-50">
             <DropdownMenuItem 
               onClick={(e) => {
                 e.stopPropagation();
@@ -179,7 +192,7 @@ function FolderCard({ folder, onNavigate, onActionComplete, currentFolderPath })
 
         {/* Hover Overlay */}
         <div 
-          className={`absolute inset-0 bg-gradient-to-t from-blue-600/10 via-transparent to-transparent transition-opacity duration-300 ${
+          className={`absolute inset-0 bg-gradient-to-t from-blue-600/10 via-transparent to-transparent transition-opacity duration-300 pointer-events-none ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`}
         />
@@ -201,6 +214,11 @@ function FolderCard({ folder, onNavigate, onActionComplete, currentFolderPath })
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Enter new folder name"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newFolderName && newFolderName !== folder.name) {
+                  handleRename();
+                }
+              }}
             />
           </div>
           <div className="flex justify-end gap-2 mt-6">
@@ -209,14 +227,14 @@ function FolderCard({ folder, onNavigate, onActionComplete, currentFolderPath })
                 setRenameOpen(false);
                 setNewFolderName("");
               }}
-              className="px-4 py-2 text-sm rounded-md bg-gray-700 hover:bg-gray-600 text-white"
+              className="px-4 py-2 text-sm rounded-md bg-gray-700 hover:bg-gray-600 text-white transition-colors duration-200"
             >
               Cancel
             </button>
             <button
               onClick={handleRename}
               disabled={!newFolderName || newFolderName === folder.name}
-              className="px-4 py-2 text-sm rounded-md bg-blue-600 hover:bg-blue-500 disabled:bg-gray-400 text-white"
+              className="px-4 py-2 text-sm rounded-md bg-blue-600 hover:bg-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed text-white transition-colors duration-200"
             >
               Rename
             </button>
@@ -236,13 +254,13 @@ function FolderCard({ folder, onNavigate, onActionComplete, currentFolderPath })
           <div className="flex justify-end gap-2 mt-6">
             <button
               onClick={() => setDeleteOpen(false)}
-              className="px-4 py-2 text-sm rounded-md bg-gray-700 hover:bg-gray-600 text-white"
+              className="px-4 py-2 text-sm rounded-md bg-gray-700 hover:bg-gray-600 text-white transition-colors duration-200"
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
-              className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-500 text-white"
+              className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-500 text-white transition-colors duration-200"
             >
               Delete
             </button>
