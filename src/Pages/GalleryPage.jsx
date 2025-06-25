@@ -1,11 +1,12 @@
 import React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { useCloudinary } from '../core/CloudinaryContext';
 import ImageCard from '../components/ImageCard';
 import FolderCard from '../components/FolderCard';
 import { NavBar } from '../components/NavBar';
-import { RefreshCw, ArrowLeft, FolderPlus, Home } from "lucide-react";
+import { FileUpload } from '../components/ui/file-upload';
+import { RefreshCw, ArrowLeft, FolderPlus, Home, Upload, X, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,18 @@ function GalleryPage() {
   const [error, setError] = useState(null);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  
+  // Upload related states
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showProgress, setShowProgress] = useState(false);
+  
+  // Drag and drop states
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
+  const dropRef = useRef(null);
 
   // Get sessionId and currentAccount from context
   const { sessionId, currentAccount, sessions } = useCloudinary();
@@ -92,6 +105,153 @@ function GalleryPage() {
     ]);
   };
 
+  // Upload functionality
+  const handleUpload = async (filesToUpload = pendingFiles) => {
+    if (filesToUpload.length === 0) return;
+    
+    const activeSessionId = getActiveSessionId();
+    if (!activeSessionId) {
+      alert('Please select a Cloudinary account first');
+      return;
+    }
+
+    setIsUploading(true);
+    setShowProgress(true);
+    setUploadProgress(0);
+
+    try {
+      const formData = new FormData();
+      
+      // Append all files to FormData
+      filesToUpload.forEach(file => {
+        formData.append('files', file);
+      });
+
+      // Append sessionId
+      formData.append('sessionId', activeSessionId);
+      
+      // Append current folder if we're in one
+      if (currentFolder) {
+        formData.append('folder', currentFolder);
+      }
+
+      // Create XMLHttpRequest for progress tracking
+      const xhr = new XMLHttpRequest();
+
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(progress);
+        }
+      });
+
+      // Handle successful response
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
+          console.log('Upload successful:', response);
+          
+          // Clear pending files
+          setPendingFiles([]);
+          setUploadModalOpen(false);
+          
+          // Refresh the gallery
+          fetchAll();
+          
+          // Show success message
+          alert(`${response.files.length} files uploaded successfully to ${currentFolder || 'root'}!`);
+        } else {
+          console.error('Upload failed:', xhr.responseText);
+          alert('Upload failed. Please try again.');
+        }
+        
+        setIsUploading(false);
+        setShowProgress(false);
+      });
+
+      // Handle errors
+      xhr.addEventListener('error', () => {
+        console.error('Upload error');
+        alert('Upload error. Please try again.');
+        setIsUploading(false);
+        setShowProgress(false);
+      });
+
+      // Send the request to your backend
+      xhr.open('POST', `${API_BASE_URL}/api/upload`);
+      xhr.send(formData);
+
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Upload error. Please try again.');
+      setIsUploading(false);
+      setShowProgress(false);
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev + 1);
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev - 1);
+    if (dragCounter <= 1) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    setDragCounter(0);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      // Check if we have an active session
+      const activeSessionId = getActiveSessionId();
+      if (!activeSessionId) {
+        alert('Please select a Cloudinary account first');
+        return;
+      }
+      
+      // Upload directly without showing modal
+      handleUpload(files);
+    }
+  };
+
+  // Set up drag and drop event listeners
+  useEffect(() => {
+    const div = dropRef.current;
+    if (div) {
+      div.addEventListener('dragenter', handleDragEnter);
+      div.addEventListener('dragleave', handleDragLeave);
+      div.addEventListener('dragover', handleDragOver);
+      div.addEventListener('drop', handleDrop);
+
+      return () => {
+        div.removeEventListener('dragenter', handleDragEnter);
+        div.removeEventListener('dragleave', handleDragLeave);
+        div.removeEventListener('dragover', handleDragOver);
+        div.removeEventListener('drop', handleDrop);
+      };
+    }
+  }, [dragCounter]);
+
   // Navigate to a folder
   const navigateToFolder = (folderName) => {
     const newPath = currentFolder ? `${currentFolder}/${folderName}` : folderName;
@@ -148,6 +308,11 @@ function GalleryPage() {
     }
   };
 
+  // Handle file selection from modal
+  const handleFileSelect = (files) => {
+    setPendingFiles(files);
+  };
+
   // Fetch data when sessionId, currentAccount, or currentFolder changes
   useEffect(() => {
     const activeSessionId = getActiveSessionId();
@@ -159,8 +324,21 @@ function GalleryPage() {
   const activeSessionId = getActiveSessionId();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={dropRef}>
       <NavBar/>
+      
+      {/* Drag Overlay */}
+      {isDragOver && (
+        <div className="fixed inset-0 z-50 bg-blue-500/20 backdrop-blur-sm border-4 border-dashed border-blue-500 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-8 text-center shadow-2xl">
+            <Upload className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Drop files to upload</h3>
+            <p className="text-gray-600">
+              Files will be uploaded to {currentFolder || 'root folder'}
+            </p>
+          </div>
+        </div>
+      )}
       
       {/* Account Status Section */}
       <div className="w-full bg-white border-b border-gray-200 shadow-sm">
@@ -350,6 +528,7 @@ function GalleryPage() {
                 {currentFolder ? `"${currentFolder}" is empty` : 'Your gallery is empty'}
               </p>
               <p className="text-sm">Upload some images or create folders to get started!</p>
+              <p className="text-xs text-gray-400">Drag and drop files anywhere or use the upload button</p>
             </div>
             {currentFolder && (
               <button
@@ -376,6 +555,78 @@ function GalleryPage() {
           </div>
         </div>
       )}
+
+      {/* Floating Upload Button */}
+      {activeSessionId && (
+        <button
+          onClick={() => setUploadModalOpen(true)}
+          disabled={isUploading}
+          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 active:scale-95 z-40"
+          title="Upload Files"
+        >
+          <Upload className={`w-6 h-6 ${isUploading ? 'animate-pulse' : ''}`} />
+        </button>
+      )}
+
+      {/* Upload Modal */}
+      <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
+        <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Upload className="w-5 h-5" />
+              <span>Upload Files</span>
+            </DialogTitle>
+            <DialogDescription>
+              Upload files to {currentFolder ? `"${currentFolder}"` : 'root folder'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* File Upload Component */}
+            <div className="min-h-64 border border-dashed bg-white border-neutral-200 rounded-lg">
+              <FileUpload onChange={handleFileSelect} />
+            </div>
+            
+            {/* Upload Actions */}
+            <div className="flex justify-between items-center pt-4">
+              <div className="text-sm text-gray-600">
+                {pendingFiles.length > 0 && (
+                  <span>{pendingFiles.length} file{pendingFiles.length !== 1 ? 's' : ''} selected</span>
+                )}
+              </div>
+              
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => {
+                    setUploadModalOpen(false);
+                    setPendingFiles([]);
+                  }}
+                  className="px-4 py-2 text-sm rounded-md bg-gray-700 hover:bg-gray-600 text-white transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpload()}
+                  disabled={pendingFiles.length === 0 || isUploading}
+                  className="px-4 py-2 text-sm rounded-md bg-blue-600 hover:bg-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed text-white transition-colors duration-200 flex items-center space-x-2"
+                >
+                  {isUploading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      <span>Upload {pendingFiles.length > 0 ? `(${pendingFiles.length})` : ''}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Create Folder Dialog */}
       <Dialog open={createFolderOpen} onOpenChange={setCreateFolderOpen}>
@@ -424,6 +675,49 @@ function GalleryPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Progress Notification */}
+      {showProgress && (
+        <div className="fixed bottom-6 left-6 bg-white border border-gray-200 rounded-xl p-4 shadow-2xl z-50 animate-slide-up">
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="w-2 h-2 bg-black rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-gray-900">
+              Uploading to {currentFolder || 'root'}...
+            </span>
+          </div>
+          
+          <div className="w-48 bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div 
+              className="bg-black h-2 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+          
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-xs text-gray-600">{uploadProgress}% Complete</span>
+            {uploadProgress === 100 && (
+              <Check className="w-4 h-4 text-green-600" />
+            )}
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes slide-up {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
