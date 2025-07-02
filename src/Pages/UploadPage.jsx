@@ -254,7 +254,7 @@ function UploadPage() {
 
       {/* Progress Notification */}
       {showProgress && (
-        <div className="fixed bottom-6 right-6 bg-white border border-gray-200 rounded-xl p-4 shadow-2xl z-50 animate-slide-up">
+        <div className="fixed bottom-6 right-6 bg-white border border-gray-200 rounded-xl p-4 shadow-2xl z-20 animate-slide-up">
           <div className="flex items-center space-x-3 mb-3">
             <div className="w-2 h-2 bg-black rounded-full animate-pulse"></div>
             <span className="text-sm font-medium text-gray-900">Uploading files...</span>
