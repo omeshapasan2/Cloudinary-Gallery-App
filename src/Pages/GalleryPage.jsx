@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import ImageModal from '../components/ImageModal';
 
 function GalleryPage() {
   const [currentFolder, setCurrentFolder] = useState(""); // "" = root
@@ -38,6 +39,9 @@ function GalleryPage() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragCounter, setDragCounter] = useState(0);
   const dropRef = useRef(null);
+
+  // Image modal state
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
   // Get sessionId and currentAccount from context
   const { sessionId, currentAccount, sessions } = useCloudinary();
@@ -507,11 +511,12 @@ function GalleryPage() {
             ))}
             
             {/* Then Images */}
-            {images.map((image) => (
-              <ImageCard 
-                key={image.public_id} 
-                image={image} 
+            {images.map((image, idx) => (
+              <ImageCard
+                key={image.public_id}
+                image={image}
                 onActionComplete={() => fetchAll()}
+                onClick={() => setSelectedImageIndex(idx)}
               />
             ))}
           </div>
@@ -701,6 +706,14 @@ function GalleryPage() {
           </div>
         </div>
       )}
+
+      <ImageModal
+        open={selectedImageIndex !== null}
+        onOpenChange={(open) => !open && setSelectedImageIndex(null)}
+        images={images}
+        index={selectedImageIndex ?? 0}
+        setIndex={setSelectedImageIndex}
+      />
 
       <style jsx>{`
         @keyframes slide-up {

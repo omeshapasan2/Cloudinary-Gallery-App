@@ -47,7 +47,7 @@ function CopyButton({ image, className }) {
   );
 }
 
-function ImageCard({ image, onActionComplete }) {
+function ImageCard({ image, onActionComplete, onClick }) {
   const [isHovered, setIsHovered] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -102,8 +102,9 @@ function ImageCard({ image, onActionComplete }) {
   };
 
   return (
-    <div 
+    <div
       className="relative group cursor-pointer transition-all duration-300 ease-out hover:translate-y-1"
+      onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -131,7 +132,10 @@ function ImageCard({ image, onActionComplete }) {
         {/* Three Dots Button - Top Right */}
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="absolute top-3 right-3 p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 opacity-0 group-hover:opacity-100">
+                <button
+                  className="absolute top-3 right-3 p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                  onClick={(e) => e.stopPropagation()}
+                >
                 <MoreVertical size={14} />
                 </button>
             </DropdownMenuTrigger>
@@ -204,17 +208,18 @@ function ImageCard({ image, onActionComplete }) {
                 <DropdownMenuItem>Delete</DropdownMenuItem>
             </DropdownMenuContent> */}
 
-            <DropdownMenuContent align="end">
-                <DropdownMenuItem 
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem
                   onClick={() => {
                     setNewName(image.public_id);
-                    setRenameOpen(true)
+                    setRenameOpen(true);
                   }}
+                  onSelect={(e) => e.stopPropagation()}
                 >
                     Rename
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setDeleteOpen(true)}>
+                <DropdownMenuItem onClick={() => setDeleteOpen(true)} onSelect={(e) => e.stopPropagation()}>
                     Delete
                 </DropdownMenuItem>
             </DropdownMenuContent>
