@@ -4,7 +4,6 @@ import {
   NavBody,
   NavItems,
   MobileNav,
-  NavbarLogo,
   NavbarButton,
   MobileNavHeader,
   MobileNavToggle,
@@ -43,6 +42,8 @@ import {
 import AccountInput from "../components/AccountInput";
 import AccountSelector from "../components/AccountSelector";
 import Guide from "./Guide";
+// Import your logo image
+import logo from "../../public/cv_logo.png";
 
 export function NavBar() {
   const navItems = [
@@ -51,20 +52,31 @@ export function NavBar() {
       link: "/",
     },
     {
-      name: "Gallery", // Fixed typo from "Galllery"
+      name: "Gallery",
       link: "/gallery",
     },
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showSelector, setShowSelector] = useState(false); // Added missing state
+  const [showSelector, setShowSelector] = useState(false);
 
   return (
     <div className="relative w-full">
       <Navbar>
         {/* Desktop Navigation */}
         <NavBody>
-          <NavbarLogo />
+          {/* Custom Logo */}
+          <div className="flex items-center gap-3">
+            <img 
+              src={logo} 
+              alt="CloudVault Logo" 
+              className="h-10 w-auto" // Increased size
+            />
+            <span className="text-xl font-bold text-gray-800 dark:text-white">
+              CloudVault
+            </span>
+          </div>
+          
           <NavItems items={navItems} />
           
           {/* Desktop Action Icons - Hidden on mobile */}
@@ -116,7 +128,18 @@ export function NavBar() {
         {/* Mobile Navigation */}
         <MobileNav>
           <MobileNavHeader>
-            <NavbarLogo />
+            {/* Custom Logo for Mobile */}
+            <div className="flex items-center gap-2">
+              <img 
+                src={logo} 
+                alt="CloudVault Logo" 
+                className="h-8 w-auto" // Increased mobile size
+              />
+              <span className="text-lg font-bold text-gray-800 dark:text-white">
+                CloudVault
+              </span>
+            </div>
+            
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
