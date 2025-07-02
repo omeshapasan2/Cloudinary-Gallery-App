@@ -43,7 +43,7 @@ function GalleryPage() {
   const { sessionId, currentAccount, sessions } = useCloudinary();
 
   const API_BASE_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://cloudinary-gallery-app-production.up.railway.app' 
+    ? 'http://185.194.142.40:5000' 
     : 'http://localhost:5000';
 
   // Get the active session ID (either from context or from sessions based on current account)
