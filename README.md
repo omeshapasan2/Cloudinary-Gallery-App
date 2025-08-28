@@ -1,6 +1,5 @@
 # 📸 React Cloudinary Image Gallery
 
-[Still in Development]
 
 A modern React-based image gallery that allows users to upload and preview images using **Cloudinary**, with no backend required. Users can provide their own Cloudinary credentials for secure and isolated uploads.
 
